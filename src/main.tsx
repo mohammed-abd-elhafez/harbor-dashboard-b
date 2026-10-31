@@ -11,7 +11,11 @@ async function bootstrap(): Promise<void> {
   if (mocksEnabled()) {
     try {
       const { worker } = await import('./data/browser');
-      await worker.start({ onUnhandledRequest: 'bypass', quiet: true });
+      await worker.start({
+        onUnhandledRequest: 'bypass',
+        quiet: true,
+        serviceWorker: { url: `${import.meta.env.BASE_URL}mockServiceWorker.js` },
+      });
     } catch {
       // Service workers can be unavailable (blocked, private mode). Requests then go to the network.
     }
