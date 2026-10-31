@@ -1,0 +1,30 @@
+[data-variant="dark-ops"] {
+  --font-sans: 'IBM Plex Sans', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+
+  --bg-page: #0B0F14;
+  --bg-rail: #0E141B;
+  --bg-surface: #111820;
+  --bg-raised: #1B2531;
+  --border: #1E2A36;
+  --border-strong: #2B3A4A;
+
+  --text: #E6EDF3;
+  --text-muted: #93A1B0;
+  --text-disabled: #8190A0;
+
+  --accent: #F5B544;
+  --accent-hover: #FFD07A;
+  --on-accent: #0B0F14;
+
+  --pos: #3DD68C;
+  --neg: #FF8A80;
+  --info: #6CB6FF;
+
+  --focus-ring: #F5B544; /* DERIVED */
+  color: var(--text);
+  background: var(--bg-page);
+  font-family: var(--font-sans);
+}
+[data-variant="dark-ops"] a { color: var(--accent); }
+[data-variant="dark-ops"] a:hover { color: var(--accent-hover); }

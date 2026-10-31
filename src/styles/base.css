@@ -1,0 +1,19 @@
+@import "@fontsource/ibm-plex-sans/latin-400.css";
+@import "@fontsource/ibm-plex-sans/latin-500.css";
+@import "@fontsource/ibm-plex-sans/latin-600.css";
+@import "@fontsource/ibm-plex-sans/latin-700.css";
+@import "@fontsource/ibm-plex-mono/latin-400.css";
+@import "@fontsource/ibm-plex-mono/latin-500.css";
+@import "@fontsource/ibm-plex-mono/latin-600.css";
+
+@tailwind utilities;
+
+/* No global box-sizing reset on purpose: the reference layout is built on content-box by default.
+   Elements that need border-box declare it themselves (see spec section 9). */
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: #0B0F14; }
+h1, h2, p, ul, ol { margin: 0; }
+ul, ol { padding: 0; list-style: none; }
+button { font: inherit; }
+input { font: inherit; }
+table { border-collapse: collapse; }
