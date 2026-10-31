@@ -19,9 +19,11 @@ interface Props {
   pagination: Pagination | undefined;
   state: LoadState;
   onRetry: () => void;
+  /** Provided only when real paging exists (the mocks have a single page). */
+  onPageChange?: ((page: number) => void) | undefined;
 }
 
-export function OrderLogCard({ orders, pagination, state, onRetry }: Props) {
+export function OrderLogCard({ orders, pagination, state, onRetry, onPageChange }: Props) {
   const ready = state === 'ready' && orders && pagination;
   const empty = ready && orders.length === 0;
   const { shown, total, page, pages } = empty || !pagination ? { shown: 0, total: 0, page: 1, pages: 1 } : pagination;
@@ -83,8 +85,10 @@ export function OrderLogCard({ orders, pagination, state, onRetry }: Props) {
           {state === 'ready' ? `${shown} of ${int(total)} orders · page ${page} / ${pages}` : ' '}
         </span>
         <div className="b-foot-btns">
-          <Button disabled={state !== 'ready' || page <= 1}>Prev</Button>
-          <Button disabled={state !== 'ready' || !!empty}>Next</Button>
+          <Button disabled={state !== 'ready' || page <= 1} onClick={() => onPageChange?.(page - 1)}>Prev</Button>
+          <Button disabled={state !== 'ready' || !!empty || (!!onPageChange && page >= pages)} onClick={() => onPageChange?.(page + 1)}>
+            Next
+          </Button>
         </div>
       </div>
     </div>

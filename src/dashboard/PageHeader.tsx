@@ -6,9 +6,11 @@ interface Props {
   updatedAt: string;
   range: RangeKey;
   onRangeChange: (range: RangeKey) => void;
+  /** Only provided when the real API is in use. */
+  onSignOut?: (() => void) | undefined;
 }
 
-export function PageHeader({ updatedAt, range, onRangeChange }: Props) {
+export function PageHeader({ updatedAt, range, onRangeChange, onSignOut }: Props) {
   return (
     <header className="b-header" data-testid="page-header">
       <div className="b-titles">
@@ -39,6 +41,11 @@ export function PageHeader({ updatedAt, range, onRangeChange }: Props) {
           <input type="search" className="b-search-input" aria-label="Search or run a command" placeholder={'Search or jump to…'} />
           <kbd className="b-kbd">Ctrl K</kbd>
         </div>
+        {onSignOut && (
+          <button type="button" className="b-btn b-btn-quiet" onClick={onSignOut}>
+            Sign out
+          </button>
+        )}
       </div>
     </header>
   );
