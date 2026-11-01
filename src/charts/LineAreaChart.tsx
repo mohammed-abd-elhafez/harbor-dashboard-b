@@ -1,3 +1,4 @@
+import { useState, type PointerEvent } from 'react';
 import { chartAriaLabel, computePoints, samplePoints, toAreaPath, toPolyline } from '../domain/chart-math';
 import { axisK, tooltipK } from '../domain/format';
 import type { SeriesPoint } from '../domain/types';
@@ -24,9 +25,28 @@ export function LineAreaChart({ series, width }: { series: readonly SeriesPoint[
   const x1 = vbWidth - RIGHT_MARGIN;
   const xy = computePoints(points, undefined, x1);
   const xLabels = width !== undefined && width < 520 ? X_LABELS_3 : X_LABELS_5;
+  const [hover, setHover] = useState<number | null>(null);
   const last = xy[xy.length - 1];
   const lastPoint = points[points.length - 1];
   if (!last || !lastPoint) return null;
+
+  // At rest the marker sits on the latest point (pixel-parity state); pointing at the chart moves it.
+  const activeIdx = hover ?? xy.length - 1;
+  const active = xy[activeIdx] ?? last;
+  const activePoint = points[activeIdx] ?? lastPoint;
+  const resting = activeIdx === xy.length - 1;
+  const tipX = resting ? active.x - 116 : Math.min(Math.max(active.x - 50, 52), x1 - 100);
+
+  const pointTo = (e: PointerEvent<SVGSVGElement>) => {
+    const box = e.currentTarget.getBoundingClientRect();
+    if (box.width === 0) return;
+    const vx = ((e.clientX - box.left) / box.width) * vbWidth;
+    let best = 0;
+    xy.forEach((p, i) => {
+      if (Math.abs(p.x - vx) < Math.abs((xy[best]?.x ?? 0) - vx)) best = i;
+    });
+    setHover(best);
+  };
 
   return (
     <svg
@@ -35,7 +55,11 @@ export function LineAreaChart({ series, width }: { series: readonly SeriesPoint[
       width={width ?? '100%'}
       role="img"
       aria-label={chartAriaLabel(points)}
-      style={{ display: 'block', height: 'auto' }}
+      style={{ display: 'block', height: 'auto', touchAction: 'pan-y' }}
+      onPointerMove={pointTo}
+      onPointerDown={pointTo}
+      onPointerLeave={() => setHover(null)}
+      onPointerCancel={() => setHover(null)}
     >
       <g stroke="#1E2A36" strokeWidth="1" strokeDasharray="3 5">
         {GRID_Y.map((y) => (
@@ -51,10 +75,13 @@ export function LineAreaChart({ series, width }: { series: readonly SeriesPoint[
       </g>
       <path d={toAreaPath(xy)} fill="#F5B544" fillOpacity="0.12" />
       <polyline points={toPolyline(xy)} fill="none" stroke="#F5B544" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx={last.x} cy={last.y} r="5" fill="#0B0F14" stroke="#F5B544" strokeWidth="2.5" />
-      <rect x={last.x - 116} y="2" width="100" height="24" rx="4" fill="#1B2531" stroke="#2B3A4A" />
-      <text x={last.x - 66} y="18" textAnchor="middle" fontFamily={MONO} fontSize="12" fill="#E6EDF3">
-        {`${lastPoint.label} · ${tooltipK(lastPoint.value)}`}
+      {!resting && (
+        <line x1={active.x} y1="30" x2={active.x} y2="200" stroke="#2B3A4A" strokeWidth="1" data-testid="chart-guide" />
+      )}
+      <circle cx={active.x} cy={active.y} r="5" fill="#0B0F14" stroke="#F5B544" strokeWidth="2.5" data-testid="chart-marker" />
+      <rect x={tipX} y="2" width="100" height="24" rx="4" fill="#1B2531" stroke="#2B3A4A" />
+      <text x={tipX + 50} y="18" textAnchor="middle" fontFamily={MONO} fontSize="12" fill="#E6EDF3" data-testid="chart-tooltip">
+        {`${activePoint.label} · ${tooltipK(activePoint.value)}`}
       </text>
       <g fontFamily={MONO} fontSize="12" fill="#93A1B0">
         {xLabels.indexes.map((idx, n) => {

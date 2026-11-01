@@ -81,6 +81,21 @@ test.describe('page behaviour', () => {
     await expect(page.getByTestId('card-status')).toContainText('Paid');
   });
 
+  test('chart marker and tooltip follow the pointer and return to the latest point', async ({ page }) => {
+    await page.goto('/');
+    const svg = page.getByTestId('revenue-chart-svg');
+    const tip = page.getByTestId('chart-tooltip');
+    await expect(svg).toBeVisible();
+    const rest = await tip.textContent();
+    const box = (await svg.boundingBox())!;
+    await page.mouse.move(box.x + box.width * 0.3, box.y + box.height / 2);
+    await expect(tip).not.toHaveText(rest ?? '');
+    await expect(page.getByTestId('chart-guide')).toHaveCount(1);
+    await page.mouse.move(0, 0);
+    await expect(tip).toHaveText(rest ?? '');
+    await expect(page.getByTestId('chart-guide')).toHaveCount(0);
+  });
+
   test('customers page pages through the list', async ({ page }) => {
     await page.goto('/#/customers');
     await expect(page.getByText(/^10 of 65 customers · page 1 \/ 7$/)).toBeVisible();
