@@ -1,4 +1,4 @@
-import type { MouseEvent } from 'react';
+import { routeHref } from '../app/route';
 import { int, usd2 } from '../domain/format';
 import type { OrderRow, Pagination } from '../domain/types';
 import { Async, Skeleton, type LoadState } from '../ui/Async';
@@ -31,7 +31,7 @@ export function OrderLogCard({ orders, pagination, state, onRetry, onPageChange 
     <div className="b-card b-card-orders" data-testid="card-orders">
       <div className="b-card-head">
         <h2 className="b-h2">Order log</h2>
-        <a href="#" className="b-link" onClick={(e: MouseEvent) => e.preventDefault()}>
+        <a href={routeHref('orders')} className="b-link">
           Open all orders <Icon name="arrow-right" size={16} />
         </a>
       </div>

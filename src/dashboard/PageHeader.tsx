@@ -1,6 +1,6 @@
-import { RANGES } from '../domain/range';
 import type { RangeKey } from '../domain/types';
 import { Icon } from '../ui/Icon';
+import { RangeGroup } from '../ui/RangeGroup';
 
 interface Props {
   updatedAt: string;
@@ -22,19 +22,7 @@ export function PageHeader({ updatedAt, range, onRangeChange, onSignOut }: Props
           <span className="b-live-dot" aria-hidden="true" />
           {`Live · updated ${updatedAt}`}
         </span>
-        <div role="group" aria-label="Time range" className="b-range">
-          {RANGES.map((r) => (
-            <button
-              key={r}
-              type="button"
-              className="b-range-btn"
-              aria-pressed={r === range}
-              onClick={() => onRangeChange(r)}
-            >
-              {r}
-            </button>
-          ))}
-        </div>
+        <RangeGroup range={range} onRangeChange={onRangeChange} />
         <div className="b-search">
           <Icon name="search" size={18} />
           {/* TODO(search): v1 has no results behaviour and no global Ctrl K handler (spec 10.4). */}

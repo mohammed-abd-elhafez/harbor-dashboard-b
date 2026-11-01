@@ -24,7 +24,7 @@ function ChartArea({ series }: { series: OverviewDto['revenueSeries']['points'] 
 }
 
 interface Props {
-  data: OverviewDto | undefined;
+  data: Pick<OverviewDto, 'periodLabel' | 'revenueSeries'> | undefined;
   state: LoadState;
   onRetry: () => void;
 }

@@ -54,3 +54,30 @@ test('range buttons reload data from the API', async ({ page }) => {
   await expect(page.getByText('$48,920')).toBeHidden();
   await expect(page.getByRole('button', { name: '7d' })).toHaveAttribute('aria-pressed', 'true');
 });
+
+test('every page loads real data after sign-in', async ({ page }) => {
+  await page.goto('/');
+  await page.getByLabel('Email').fill(email);
+  await page.getByLabel('Password').fill(password);
+  await page.getByRole('button', { name: 'Sign in' }).click();
+  await expect(page.getByText('$48,920')).toBeVisible();
+
+  await page.getByRole('link', { name: 'Orders', exact: true }).click();
+  await expect(page.locator('[data-testid="orders-page-table"] tbody tr')).toHaveCount(10);
+  await page.getByRole('button', { name: 'Shipped' }).click();
+  await expect(page.locator('[data-testid="orders-page-table"] tbody tr').first()).toContainText('Shipped');
+
+  await page.getByRole('link', { name: 'Products', exact: true }).click();
+  await expect(page.locator('[data-testid="products-table"] tbody tr')).toHaveCount(4);
+
+  await page.getByRole('link', { name: 'Customers', exact: true }).click();
+  await expect(page.getByText(/^10 of 65 customers · page 1 \/ 7$/)).toBeVisible();
+
+  await page.getByRole('link', { name: 'Analytics', exact: true }).click();
+  await expect(page.getByTestId('sources-table')).toContainText('Search');
+  await expect(page.getByTestId('card-status')).toContainText('Paid');
+
+  await page.getByRole('link', { name: 'Settings', exact: true }).click();
+  await expect(page.getByTestId('settings')).toContainText(email);
+  await expect(page.getByTestId('settings')).toContainText('Live API');
+});

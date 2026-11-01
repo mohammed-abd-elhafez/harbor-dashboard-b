@@ -223,3 +223,16 @@
 .b-btn-primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent); font-weight: 600; }
 .b-btn-primary:disabled { background: transparent; color: var(--text-disabled); border-color: var(--border); }
 .b-btn-quiet { border-color: var(--border); color: var(--text-muted); }
+
+/* Pages beyond the overview (DERIVED) */
+.b-range-wide { align-self: flex-start; flex-wrap: wrap; }
+.b-empty { margin: 0; padding: 48px 0; text-align: center; font-size: 14px; color: var(--text-muted); }
+.b-stock { display: inline-flex; align-items: center; gap: 10px; }
+.b-coverage { min-width: 120px; }
+.b-who { display: flex; flex-direction: column; gap: 2px; }
+.b-settings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); gap: 20px; }
+.b-dl { margin: 0; display: flex; flex-direction: column; }
+.b-dl-row { display: flex; justify-content: space-between; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+.b-dl-row:last-child { border-bottom: 0; padding-bottom: 0; }
+.b-dl dt { color: var(--text-muted); }
+.b-dl dd { margin: 0; text-align: right; overflow-wrap: anywhere; }

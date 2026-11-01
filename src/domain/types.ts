@@ -30,6 +30,8 @@ export interface OrderRow {
   total: number;
   status: OrderStatus;
   time: string;
+  /** 'Oct 31'. Absent in the fixed overview fixture. */
+  date?: string;
 }
 
 export interface InventoryItem {
@@ -57,4 +59,41 @@ export interface OverviewDto {
   pagination: Pagination;
   inventory: InventoryItem[];
   store: { name: string; initial: string };
+}
+
+export interface ProductRow {
+  name: string;
+  stock: number;
+  level: 'ok' | 'low' | 'critical';
+  fillPercent: number;
+  unitsSold: number;
+  revenue: number;
+}
+
+export interface CustomerRow {
+  name: string;
+  email: string;
+  orders: number;
+  spent: number;
+  lastOrder: string | null;
+}
+
+export interface AnalyticsDto {
+  range: RangeKey;
+  periodLabel: string;
+  revenueSeries: Series;
+  statuses: { status: OrderStatus; count: number; percent: number }[];
+  sources: { id: TrafficSource['id']; label: string; visits: number; conversions: number; rate: number; percent: number }[];
+}
+
+export interface SettingsDto {
+  user: { email: string };
+  store: { name: string; timezone: string };
+  stock: { low: number; critical: number };
+  version: string;
+}
+
+export interface Page<T> {
+  items: T[];
+  pagination: Pagination;
 }

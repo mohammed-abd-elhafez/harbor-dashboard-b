@@ -1,24 +1,23 @@
 import * as Dialog from '@radix-ui/react-dialog';
-import { useState, type MouseEvent } from 'react';
+import { useState } from 'react';
+import { ROUTE_TITLES, routeHref, type RouteKey } from '../app/route';
 import { Icon, type IconName } from '../ui/Icon';
 
-const NAV: { label: string; icon: IconName }[] = [
-  { label: 'Overview', icon: 'home' },
-  { label: 'Orders', icon: 'bag' },
-  { label: 'Products', icon: 'box' },
-  { label: 'Customers', icon: 'users' },
-  { label: 'Analytics', icon: 'chart' },
+const NAV: { route: RouteKey; icon: IconName }[] = [
+  { route: 'overview', icon: 'home' },
+  { route: 'orders', icon: 'bag' },
+  { route: 'products', icon: 'box' },
+  { route: 'customers', icon: 'users' },
+  { route: 'analytics', icon: 'chart' },
 ];
-
-// Spec 10.4: nav links are placeholders; the URL must not change.
-const noNavigate = (e: MouseEvent) => e.preventDefault();
 
 /**
  * >= 1024px: the 73px icon rail. Below that (spec 12, DERIVED) the same aside becomes a 56px top bar
  * with a menu button; the nav moves into a focus-trapped drawer.
  */
-export function Rail({ initial }: { initial: string }) {
+export function Rail({ initial, route }: { initial: string; route: RouteKey }) {
   const [open, setOpen] = useState(false);
+  const current = (r: RouteKey) => (r === route ? ('page' as const) : undefined);
   return (
     <aside className="b-rail" data-testid="rail">
       <Dialog.Root open={open} onOpenChange={setOpen}>
@@ -32,19 +31,16 @@ export function Rail({ initial }: { initial: string }) {
           <Dialog.Content className="b-drawer" data-variant="dark-ops" aria-describedby={undefined}>
             <Dialog.Title className="b-drawer-title">Navigation</Dialog.Title>
             <nav aria-label="Main menu" className="b-drawer-nav">
-              {NAV.map((item, i) => (
+              {[...NAV, { route: 'settings' as const, icon: 'sliders' as const }].map((item) => (
                 <a
-                  key={item.label}
-                  href="#"
+                  key={item.route}
+                  href={routeHref(item.route)}
                   className="b-drawer-link"
-                  aria-current={i === 0 ? 'page' : undefined}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setOpen(false);
-                  }}
+                  aria-current={current(item.route)}
+                  onClick={() => setOpen(false)}
                 >
                   <Icon name={item.icon} />
-                  {item.label}
+                  {ROUTE_TITLES[item.route]}
                 </a>
               ))}
             </nav>
@@ -58,19 +54,23 @@ export function Rail({ initial }: { initial: string }) {
       <nav aria-label="Main" className="b-nav">
         {NAV.map((item, i) => (
           <a
-            key={item.label}
-            href="#"
+            key={item.route}
+            href={routeHref(item.route)}
             className="b-nav-item"
             data-testid={`nav-item-${i}`}
-            aria-label={item.label}
-            aria-current={i === 0 ? 'page' : undefined}
-            onClick={noNavigate}
+            aria-label={ROUTE_TITLES[item.route]}
+            aria-current={current(item.route)}
           >
             <Icon name={item.icon} />
           </a>
         ))}
       </nav>
-      <a href="#" className="b-nav-item b-settings" aria-label="Settings" onClick={noNavigate}>
+      <a
+        href={routeHref('settings')}
+        className="b-nav-item b-settings"
+        aria-label="Settings"
+        aria-current={current('settings')}
+      >
         <Icon name="sliders" />
       </a>
     </aside>

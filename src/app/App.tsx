@@ -1,11 +1,16 @@
-import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { UnauthenticatedError } from '../data/api';
 import { useOrdersPage, useOverview } from '../data/queries';
 import { mocksEnabled } from '../data/repository';
 import { useSession, useSignOut } from '../data/session';
 import { useLiveOrders } from '../data/useLiveOrders';
 import { DarkOpsPage } from '../dashboard/DarkOpsPage';
+import { Shell } from '../dashboard/Shell';
+import { AnalyticsPage } from '../pages/AnalyticsPage';
+import { CustomersPage } from '../pages/CustomersPage';
+import { OrdersPage } from '../pages/OrdersPage';
+import { ProductsPage } from '../pages/ProductsPage';
+import { SettingsPage } from '../pages/SettingsPage';
+import { useRoute } from './route';
 import { SignIn } from '../dashboard/SignIn';
 import { parseRange } from '../domain/range';
 import type { RangeKey } from '../domain/types';
@@ -15,15 +20,16 @@ import type { LoadState } from '../ui/Async';
 const REAL_API = !mocksEnabled();
 
 export function App() {
-  const qc = useQueryClient();
+  const route = useRoute();
   const [range, setRange] = useState<RangeKey>(() => parseRange(window.location.search));
   const [page, setPage] = useState(1);
   const [announcement, setAnnouncement] = useState('');
   const session = useSession(REAL_API);
   const signedIn = !REAL_API || !!session.data;
-  const { data, isPlaceholderData, isError, error, isFetching, refetch } = useOverview(range, signedIn);
-  const ordersPage = useOrdersPage(range, page, signedIn && REAL_API);
-  const liveOrders = useLiveOrders(data?.recentOrders, REAL_API && signedIn);
+  const onOverview = route === 'overview';
+  const { data, isPlaceholderData, isError, isFetching, refetch } = useOverview(range, signedIn && onOverview);
+  const ordersPage = useOrdersPage(range, page, signedIn && onOverview && REAL_API);
+  const liveOrders = useLiveOrders(data?.recentOrders, REAL_API && signedIn && onOverview);
   const signOut = useSignOut();
   const seen = useRef<unknown>(undefined);
 
@@ -32,11 +38,6 @@ export function App() {
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
   }, []);
-
-  // An expired session shows up as a 401 on a data request: drop back to the sign-in screen.
-  useEffect(() => {
-    if (REAL_API && error instanceof UnauthenticatedError) qc.setQueryData(['session'], null);
-  }, [error, qc]);
 
   // Polite live region: announce when fresh data replaces loading or a previous range (spec 10.2).
   useEffect(() => {
@@ -56,6 +57,7 @@ export function App() {
 
   if (REAL_API && session.data === null) return <SignIn />;
 
+  const onSignOut = REAL_API ? () => signOut.mutate() : undefined;
   const state: LoadState = data ? 'ready' : isError ? 'error' : 'loading';
   const onFirstPage = page === 1 || !REAL_API;
   const orderLog =
@@ -64,18 +66,30 @@ export function App() {
       : undefined);
 
   return (
-    <DarkOpsPage
-      data={data}
-      state={state}
-      range={range}
-      busy={isPlaceholderData || (isFetching && !data) || (REAL_API && session.isPending)}
-      announcement={announcement}
-      liveOrders={liveOrders}
-      orderLog={orderLog || undefined}
-      onPageChange={REAL_API ? setPage : undefined}
-      onSignOut={REAL_API ? () => signOut.mutate() : undefined}
-      onRangeChange={changeRange}
-      onRetry={() => void refetch()}
-    />
+    <Shell
+      route={route}
+      initial={data?.store.initial ?? 'H'}
+      busy={onOverview ? isPlaceholderData || (isFetching && !data) || (REAL_API && session.isPending) : REAL_API && session.isPending}
+      announcement={onOverview ? announcement : ''}
+    >
+      {route === 'overview' && (
+        <DarkOpsPage
+          data={data}
+          state={state}
+          range={range}
+          liveOrders={liveOrders}
+          orderLog={orderLog || undefined}
+          onPageChange={REAL_API ? setPage : undefined}
+          onSignOut={onSignOut}
+          onRangeChange={changeRange}
+          onRetry={() => void refetch()}
+        />
+      )}
+      {route === 'orders' && <OrdersPage range={range} onRangeChange={changeRange} enabled={signedIn} />}
+      {route === 'products' && <ProductsPage range={range} onRangeChange={changeRange} enabled={signedIn} />}
+      {route === 'customers' && <CustomersPage enabled={signedIn} />}
+      {route === 'analytics' && <AnalyticsPage range={range} onRangeChange={changeRange} enabled={signedIn} />}
+      {route === 'settings' && <SettingsPage enabled={signedIn} onSignOut={onSignOut} />}
+    </Shell>
   );
 }
